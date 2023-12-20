@@ -57,7 +57,6 @@ impl<T> List<T> {
 
     pub fn iter(&self) -> ListIter<T> {
         ListIter {
-            list_ref: self,
             current: self.head.as_ref().map(|boxed| boxed.as_ref()),
         }
     }
@@ -81,7 +80,6 @@ impl<T> Drop for List<T> {
 
 // SECTION: Iteration
 pub struct ListIter<'a, T> {
-    list_ref: &'a List<T>,
     current: Option<&'a Node<T>>,
 }
 
