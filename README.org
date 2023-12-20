@@ -1,7 +1,7 @@
 #+title: Rusty Lists
 
 * Why build a bunch of lists?
-I think that linked lists are the perfect way to start learning about how to
-represent datastructures composed of elements that reference each other (e.g.
-Graphs and trees). So I decided to explore different ways to implement linked
-lists.
+Rust is very different from any languages I've used in the past. I think that
+linked lists are the perfect way to start learning about how to represent
+datastructures composed of elements that reference each other (e.g.  Graphs and
+trees). So I decided to explore different ways to implement linked lists.
