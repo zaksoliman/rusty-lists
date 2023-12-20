@@ -58,7 +58,7 @@ impl<T> List<T> {
     pub fn iter(&self) -> ListIter<T> {
         ListIter {
             list_ref: self,
-            current: self.head.as_ref(),
+            current: self.head.as_ref().map(|boxed| boxed.as_ref()),
         }
     }
 }
@@ -82,7 +82,7 @@ impl<T> Drop for List<T> {
 // SECTION: Iteration
 pub struct ListIter<'a, T> {
     list_ref: &'a List<T>,
-    current: Option<&'a Box<Node<T>>>,
+    current: Option<&'a Node<T>>,
 }
 
 impl<'a, T> Iterator for ListIter<'a, T> {
@@ -91,7 +91,7 @@ impl<'a, T> Iterator for ListIter<'a, T> {
     fn next(&mut self) -> Option<Self::Item> {
         match self.current {
             Some(boxed_node) => {
-                self.current = boxed_node.next.as_ref();
+                self.current = boxed_node.next.as_ref().map(|n| n.as_ref());
                 Some(&boxed_node.elem)
             }
             None => None,
