@@ -1,3 +1,43 @@
+/*
+ * The goal here is to build a list that can have multiple owners. We'll make heavy use of Rc/Arc
+ */
+
+use std::rc::Rc;
+
+struct Node<T> {
+    elem: T,
+    next: Option<Rc<Node<T>>>,
+}
+
+pub struct List<T> {
+    head: Node<T>,
+    tail: Node<T>,
+}
+
+impl<T> List<T> {
+    pub fn new() -> Self {
+        todo!("Implement new()")
+    }
+
+    pub fn prepend(self) -> Self {
+        todo!("prepend not implemented")
+    }
+
+    pub fn head(self) -> Self {
+        todo!("head not implemented")
+    }
+
+    pub fn tail(self) -> Self {
+        todo!("tail not implemented")
+    }
+
+    pub fn iter(self) -> ListIntoIter {
+        todo!("iter not implemented")
+    }
+}
+
+struct ListIntoIter {}
+
 #[cfg(test)]
 mod test {
     use super::List;
