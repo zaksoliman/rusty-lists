@@ -39,31 +39,50 @@ impl<T> List<T> {
     }
 
     pub fn tail(self) -> Self {
-        Self {
-            head: self.head.map(|n| Rc::clone(&n)),
+        match self.head {
+            Some(node) => Self {
+                head: node.next.as_ref().map(Rc::clone),
+            },
+            None => Self { head: None },
         }
     }
 
-    pub fn iter(self) -> ListIntoIter {
-        todo!("iter not implemented")
+    pub fn iter(&self) -> ListIntoIter<T> {
+        ListIntoIter {
+            current: self.head.as_deref(),
+        }
     }
 }
 
-struct ListIntoIter {}
+pub struct ListIntoIter<'a, T> {
+    current: Option<&'a Node<T>>,
+}
+
+impl<'a, T> Iterator for ListIntoIter<'a, T> {
+    type Item = &'a T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.current.map(|n| {
+            self.current = n.next.as_deref();
+            &n.elem
+        })
+    }
+}
 
 #[cfg(test)]
 mod test {
     use super::List;
-
     #[test]
     fn basics() {
         let list = List::new();
         assert_eq!(list.head(), None);
 
         let list = list.prepend(1).prepend(2).prepend(3);
+        dbg!(&list);
         assert_eq!(list.head(), Some(&3));
 
         let list = list.tail();
+        dbg!(&list);
         assert_eq!(list.head(), Some(&2));
 
         let list = list.tail();
@@ -76,7 +95,6 @@ mod test {
         let list = list.tail();
         assert_eq!(list.head(), None);
     }
-
     #[test]
     fn iter() {
         let list = List::new().prepend(1).prepend(2).prepend(3);
