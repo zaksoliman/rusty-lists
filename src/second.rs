@@ -1,11 +1,14 @@
+#![allow(dead_code)]
 /* We build on the first list implementation by adding the following features:
 *   1. Making it Generic
 *   2. Adding peek() feature to look at the value without taking it
 *   3. Make list iterable
+*       a. IntoIter => T
+*       b. Iter => &T
+*       c. IterMut => &mut T
 */
 
-#![allow(dead_code)]
-
+// SECTION: STRUCTS
 #[derive(Debug)]
 struct Node<T> {
     elem: T,
@@ -19,6 +22,7 @@ pub struct List<T> {
     head: Link<T>,
 }
 
+// SECTION: IMPLEMENTATIONS
 impl<T> List<T> {
     pub fn new() -> Self {
         List { head: Link::None }
@@ -60,6 +64,12 @@ impl<T> List<T> {
             current: self.head.as_ref().map(|boxed| boxed.as_ref()),
         }
     }
+
+    pub fn iter_mut(&mut self) -> ListIterMut<T> {
+        ListIterMut {
+            current: self.head.as_deref_mut(),
+        }
+    }
 }
 
 impl<T> Drop for List<T> {
@@ -78,9 +88,29 @@ impl<T> Drop for List<T> {
     }
 }
 
-// SECTION: Iteration
+// SECTION: ITERATORS
+// IterMut
+pub struct ListIterMut<'a, T> {
+    current: Option<&'a mut Node<T>>, // Needs to be a Node because we need the next element pointer
+}
+
+impl<'a, T> Iterator for ListIterMut<'a, T> {
+    type Item = &'a mut T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.current.take() {
+            Some(node) => {
+                self.current = node.next.as_deref_mut();
+                Some(&mut node.elem)
+            }
+            None => None,
+        }
+    }
+}
+
+// ITER
 pub struct ListIter<'a, T> {
-    current: Option<&'a Node<T>>,
+    current: Option<&'a Node<T>>, // Needs to be a Node because we need the next element pointer
 }
 
 impl<'a, T> Iterator for ListIter<'a, T> {
@@ -88,15 +118,16 @@ impl<'a, T> Iterator for ListIter<'a, T> {
 
     fn next(&mut self) -> Option<Self::Item> {
         match self.current {
-            Some(boxed_node) => {
-                self.current = boxed_node.next.as_ref().map(|n| n.as_ref());
-                Some(&boxed_node.elem)
+            Some(node) => {
+                self.current = node.next.as_ref().map(|n| n.as_ref());
+                Some(&node.elem)
             }
             None => None,
         }
     }
 }
 
+// IntoIter
 pub struct ListIntoIter<T> {
     list: List<T>,
 }
@@ -118,13 +149,13 @@ impl<T> IntoIterator for List<T> {
     }
 }
 
+// SECTION: TESTS
 #[cfg(test)]
 mod test {
     use super::List;
     #[test]
     fn basics() {
         let mut list = List::new();
-
         // Check empty list behaves right
         assert_eq!(list.pop(), None);
 
