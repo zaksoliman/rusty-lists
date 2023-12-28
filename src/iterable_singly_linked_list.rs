@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-/* We build on the first list implementation by adding the following features:
+/* We build on the singly linked list implementation by adding the following features:
 *   1. Making it Generic
 *   2. Adding peek() feature to look at the value without taking it
 *   3. Make list iterable
