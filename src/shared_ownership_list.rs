@@ -12,10 +12,23 @@
 */
 use std::rc::Rc;
 
-#[derive(Debug)]
 struct Node<T> {
     elem: T,
     next: Option<Rc<Node<T>>>,
+}
+
+impl<T: std::fmt::Debug> std::fmt::Debug for Node<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let strong_count = match &self.next {
+            Some(node) => Rc::strong_count(node),
+            None => 1000,
+        };
+        write!(
+            f,
+            "elem: {:?}, next({:?}):{:?}",
+            self.elem, strong_count, self.next
+        )
+    }
 }
 
 #[derive(Debug, Default)]
@@ -23,23 +36,35 @@ pub struct List<T> {
     head: Option<Rc<Node<T>>>,
 }
 
-impl<T> List<T> {
+impl<T: std::fmt::Debug> List<T> {
     pub fn new() -> Self {
         Self { head: None }
     }
 
-    pub fn prepend(mut self, elem: T) -> Self {
-        let tail = self.head;
-        self.head = Some(Rc::new(Node { elem, next: tail }));
-        self
+    // Takes a list and an elem and returns new list.
+    pub fn prepend(&self, elem: T) -> Self {
+        println!("Prepend {:?}", elem);
+        dbg!(self);
+
+        let l = List {
+            head: Some(Rc::new(Node {
+                elem,
+                next: self.head.clone(),
+            })),
+        };
+
+        println!("\nDone");
+        dbg!(&l);
+
+        l
     }
 
     pub fn head(&self) -> Option<&T> {
         self.head.as_deref().map(|n| &n.elem)
     }
 
-    pub fn tail(self) -> Self {
-        match self.head {
+    pub fn tail(&self) -> Self {
+        match &self.head {
             Some(node) => Self {
                 head: node.next.as_ref().map(Rc::clone),
             },
@@ -69,9 +94,17 @@ impl<'a, T> Iterator for ListIntoIter<'a, T> {
     }
 }
 
+// impl<T> Drop for List<T> {
+//     fn drop(&mut self) {
+//         let mut current_node = self.head.take();
+//     }
+// }
+
 #[cfg(test)]
 mod test {
     use super::List;
+    use std::rc::Rc;
+
     #[test]
     fn basics() {
         let list = List::new();
@@ -105,15 +138,29 @@ mod test {
         assert_eq!(iter.next(), Some(&1));
     }
     #[test]
-    fn drop_large_list() {
-        // New scope
-        {
-            let mut list = List::new();
-            for i in 1..100000 {
-                list = list.prepend(i);
-            }
-        }
-        // Drop list
-        println!("Dropped list");
+    fn trident() {
+        let list = List::new();
+
+        let list1 = list.prepend(1).prepend(2).prepend(3).prepend(4);
+
+        let list2 = list1.tail();
+        let list3 = list2.prepend(5);
+
+        assert_eq!(list1.head(), Some(&4));
+        assert_eq!(list2.head(), Some(&3));
+        assert_eq!(Rc::strong_count(&list2.head.unwrap()), 3);
+        assert_eq!(list3.head(), Some(&5));
     }
+    // #[test]
+    // fn drop_large_list() {
+    //     // New scope
+    //     {
+    //         let mut list = List::new();
+    //         for i in 1..100000 {
+    //             list = list.prepend(i);
+    //         }
+    //     }
+    //     // Drop list
+    //     println!("Dropped list");
+    // }
 }
