@@ -104,4 +104,16 @@ mod test {
         assert_eq!(iter.next(), Some(&2));
         assert_eq!(iter.next(), Some(&1));
     }
+    #[test]
+    fn drop_large_list() {
+        // New scope
+        {
+            let mut list = List::new();
+            for i in 1..100000 {
+                list = list.prepend(i);
+            }
+        }
+        // Drop list
+        println!("Dropped list");
+    }
 }
