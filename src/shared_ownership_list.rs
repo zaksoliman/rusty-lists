@@ -94,11 +94,19 @@ impl<'a, T> Iterator for ListIntoIter<'a, T> {
     }
 }
 
-// impl<T> Drop for List<T> {
-//     fn drop(&mut self) {
-//         let mut current_node = self.head.take();
-//     }
-// }
+impl<T> Drop for List<T> {
+    fn drop(&mut self) {
+        let mut current_node = self.head.take();
+        while let Some(node_pointer) = current_node {
+            match Rc::try_unwrap(node_pointer) {
+                Ok(mut node) => {
+                    current_node = node.next.take();
+                }
+                Err(_) => break,
+            }
+        }
+    }
+}
 
 #[cfg(test)]
 mod test {
@@ -148,19 +156,19 @@ mod test {
 
         assert_eq!(list1.head(), Some(&4));
         assert_eq!(list2.head(), Some(&3));
-        assert_eq!(Rc::strong_count(&list2.head.unwrap()), 3);
+        assert_eq!(Rc::strong_count(list2.head.as_ref().unwrap()), 3);
         assert_eq!(list3.head(), Some(&5));
     }
-    // #[test]
-    // fn drop_large_list() {
-    //     // New scope
-    //     {
-    //         let mut list = List::new();
-    //         for i in 1..100000 {
-    //             list = list.prepend(i);
-    //         }
-    //     }
-    //     // Drop list
-    //     println!("Dropped list");
-    // }
+    #[test]
+    fn drop_large_list() {
+        // New scope
+        {
+            let mut list = List::new();
+            for i in 1..100000 {
+                list = list.prepend(i);
+            }
+        }
+        // Drop list
+        println!("Dropped list");
+    }
 }
