@@ -12,40 +12,38 @@
 */
 use std::rc::Rc;
 
+#[derive(Debug)]
 struct Node<T> {
     elem: T,
     next: Option<Rc<Node<T>>>,
 }
 
-impl<T: std::fmt::Debug> std::fmt::Debug for Node<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let strong_count = match &self.next {
-            Some(node) => Rc::strong_count(node),
-            None => 1000,
-        };
-        write!(
-            f,
-            "elem: {:?}, next({:?}):{:?}",
-            self.elem, strong_count, self.next
-        )
-    }
-}
+// impl<T: std::fmt::Debug> std::fmt::Debug for Node<T> {
+//     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+//         let strong_count = match &self.next {
+//             Some(node) => Rc::strong_count(node),
+//             None => 1000,
+//         };
+//         write!(
+//             f,
+//             "elem: {:?}, next({:?}):{:?}",
+//             self.elem, strong_count, self.next
+//         )
+//     }
+// }
 
 #[derive(Debug, Default)]
 pub struct List<T> {
     head: Option<Rc<Node<T>>>,
 }
 
-impl<T: std::fmt::Debug> List<T> {
+impl<T> List<T> {
     pub fn new() -> Self {
         Self { head: None }
     }
 
     // Takes a list and an elem and returns new list.
     pub fn prepend(&self, elem: T) -> Self {
-        println!("Prepend {:?}", elem);
-        dbg!(self);
-
         let l = List {
             head: Some(Rc::new(Node {
                 elem,
@@ -54,7 +52,6 @@ impl<T: std::fmt::Debug> List<T> {
         };
 
         println!("\nDone");
-        dbg!(&l);
 
         l
     }
